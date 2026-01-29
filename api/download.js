@@ -1,20 +1,10 @@
 export default async function (req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'POST only' });
-  }
-
-  const rawBody = req.body ? (Buffer.isBuffer(req.body) ? req.body.toString() : req.body) : '{}';
+  const url = req.query?.url || req.body;
   
-  let body;
-  try {
-    body = JSON.parse(rawBody);
-  } catch {
-    return res.status(400).json({ error: 'Invalid JSON', body: rawBody });
-  }
-
-  const { url } = body;
-  if (!url) {
-    return res.status(400).json({ error: 'URL required' });
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ 
+      error: 'URL required. Use ?url=https://youtube.com/watch?v=ID or POST body' 
+    });
   }
 
   try {
@@ -25,14 +15,12 @@ export default async function (req, res) {
 
     return res.json({
       title: info.videoDetails.title,
-      thumbnail: info.videoDetails.thumbnails[0]?.url,
-      duration: info.videoDetails.lengthSeconds,
+      duration: info.videoDetails.lengthSeconds + 's',
       formats: formats.slice(0, 10).map(f => ({
-        itag: f.itag,
         quality: f.qualityLabel || f.audioQuality,
         url: f.url,
-        type: f.hasVideo ? 'video' : 'audio',
-        container: f.container
+        type: f.container + (f.qualityLabel ? ' ' + f.qualityLabel : ''),
+        size: Math.round(f.contentLength / 1e6) + 'MB' || '?'
       }))
     });
   } catch (err) {
