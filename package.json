@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "@ybd-project/ytdl-core": "latest"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "ytdl-core": "latest"
   }
 }
