@@ -1,7 +1,6 @@
 {
   "name": "youtube-downloader-api",
   "version": "1.0.0",
-  "type": "module",
   "dependencies": {
     "ytdl-core": "npm:@distube/ytdl-core@latest"
   }
