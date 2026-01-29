@@ -1,27 +1,24 @@
+import ytdl from 'ytdl-core';
+
 export default async function (req, res) {
-  const url = req.query?.url;
-  if (!url) {
-    return res.status(400).json({ error: 'Use ?url=https://youtube.com/watch?v=ID' });
+  const url = req.query.url;
+  if (!url || !ytdl.validateURL(url)) {
+    return res.status(400).json({ error: 'Valid YouTube URL required in ?url=' });
   }
 
   try {
-    // Serverless import لـ Vercel
-    const { YtdlCore } = await import('@ybd-project/ytdl-core/serverless');
-    const ytdl = new YtdlCore();
-
-    const info = await ytdl.getFullInfo(url);
+    const info = await ytdl.getInfo(url);
     
-    // فلتر formats لفيديو+صوت
-    const formats = info.formats.filter(f => f.url && (f.hasVideo || f.audioQuality));
+    const formats = ytdl.filterFormats(info.formats, 'videoandaudio');
 
     return res.json({
-      title: info.basicInfo.title,
-      author: info.basicInfo.author.name,
-      duration: info.basicInfo.duration + 's',
+      title: info.videoDetails.title,
+      author: info.videoDetails.author.name,
+      duration: info.videoDetails.lengthSeconds + 's',
       formats: formats.slice(0, 8).map(f => ({
-        quality: f.qualityLabel || f.audioQuality || 'audio/video',
+        quality: f.qualityLabel || f.audioQuality,
         url: f.url,
-        type: f.hasVideo ? 'video/' + f.container : 'audio/' + f.container,
+        type: f.container,
         itag: f.itag
       }))
     });
