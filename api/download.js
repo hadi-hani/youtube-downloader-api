@@ -5,24 +5,23 @@ export default async function (req, res) {
   }
 
   try {
-    const ytdl = await import('@ybd-project/ytdl-core');
-    const info = await ytdl.getBasicInfo(url);
+    // Serverless import لـ Vercel
+    const { YtdlCore } = await import('@ybd-project/ytdl-core/serverless');
+    const ytdl = new YtdlCore();
+
+    const info = await ytdl.getFullInfo(url);
     
-    // فلتر يدوي لفيديو+صوت أو أفضل جودة
-    const formats = info.formats.filter(f => 
-      (f.hasVideo && f.hasAudio) || 
-      (f.hasVideo && f.qualityLabel) ||
-      f.audioQuality
-    ).slice(0, 10);
+    // فلتر formats لفيديو+صوت
+    const formats = info.formats.filter(f => f.url && (f.hasVideo || f.audioQuality));
 
     return res.json({
-      title: info.videoDetails.title,
-      author: info.videoDetails.author.name,
-      duration: info.videoDetails.lengthSeconds + 's',
-      formats: formats.map(f => ({
-        quality: f.qualityLabel || f.audioQuality || 'unknown',
+      title: info.basicInfo.title,
+      author: info.basicInfo.author.name,
+      duration: info.basicInfo.duration + 's',
+      formats: formats.slice(0, 8).map(f => ({
+        quality: f.qualityLabel || f.audioQuality || 'audio/video',
         url: f.url,
-        type: (f.hasVideo ? 'video' : 'audio') + '/' + (f.container || 'mp4'),
+        type: f.hasVideo ? 'video/' + f.container : 'audio/' + f.container,
         itag: f.itag
       }))
     });
