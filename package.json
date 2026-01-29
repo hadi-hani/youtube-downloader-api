@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "ytdl-core": "latest"
+    "ytdl-core": "npm:@distube/ytdl-core@latest"
   }
 }
