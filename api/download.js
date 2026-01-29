@@ -1,6 +1,6 @@
-import ytdl from 'ytdl-core';
+const ytdl = require('ytdl-core');
 
-export default async function handler(req, res) {
+module.exports = async function (req, res) {
   // نسمح فقط بـ GET
   if (req.method !== 'GET') {
     return res
@@ -39,4 +39,4 @@ export default async function handler(req, res) {
     console.error('Download endpoint error:', err);
     return res.status(500).json({ error: err.message || 'Internal error' });
   }
-}
+};
